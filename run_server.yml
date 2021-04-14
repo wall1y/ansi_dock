@@ -1,0 +1,45 @@
+---
+- hosts: localhost
+  become: yes
+  tasks:
+  - name: Create logfile directory
+    file:
+      path: /var/log/http_server_log/
+      state: directory
+  - name: install python-docker
+    apt:
+      name: python-docker
+      state: present
+  - name: build server image
+    docker_image:
+      name: http_server
+      build:
+        path: ./server
+      source: build
+      state: present
+      force_source: yes
+  - name: build sender image
+    docker_image:
+      name: get_sender
+      build:
+        path: ./sender
+      source: build
+      state: present
+      force_source: yes
+  - name: Create server container
+    docker_container:
+      name: http_server
+      image: http_server
+      state: started
+      recreate: yes
+      published_ports:
+        - "8080:8080"
+      volumes:
+        - /var/log/http_server_log/:/app/log
+  - name: Create sender container
+    docker_container:
+      name: get_sender
+      image: get_sender
+      state: started
+      recreate: yes
+      network_mode: host
