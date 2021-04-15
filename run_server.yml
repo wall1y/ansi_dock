@@ -11,7 +11,7 @@
           - curl
           - software-properties-common
           - python3-pip
-            - virtualenv
+          - virtualenv
           - python3-setuptools
         state: latest
         update_cache: yes
