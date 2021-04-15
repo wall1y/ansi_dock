@@ -1,5 +1,5 @@
 ---
-- name: install ad
+- name: Install docker and run containers
   hosts: localhost
   become: yes
   tasks:
