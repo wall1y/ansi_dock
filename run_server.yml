@@ -2,15 +2,32 @@
 - hosts: localhost
   become: yes
   tasks:
+  - name: Install required system packages
+      apt: name={{ item }} state=latest update_cache=yes
+      loop: [ 'apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common', 'python3-pip', 'virtualenv', 'python3-setuptools']
+  - name: Add Docker GPG apt Key
+    apt_key:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      state: present
+  - name: Add Docker Repository
+    apt_repository:
+      repo: deb https://download.docker.com/linux/ubuntu bionic stable
+      state: present
+  - name: Update apt and install docker-ce
+      apt: update_cache=yes name=docker-ce state=latest
+
+  - name: Install Docker Module for Python
+    pip:
+      name: docker
   - name: Create logfile directory
     file:
       path: /var/log/http_server_log/
       state: directory
-  - name: install python-docker
+  - name: Install python-docker
     apt:
       name: python-docker
       state: present
-  - name: build server image
+  - name: Build server image
     docker_image:
       name: http_server
       build:
@@ -18,7 +35,7 @@
       source: build
       state: present
       force_source: yes
-  - name: build sender image
+  - name: Build sender image
     docker_image:
       name: get_sender
       build:
