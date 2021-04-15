@@ -1,62 +1,76 @@
----
-- hosts: localhost
-  become: yes
-  tasks:
-  - name: Install required system packages
-      apt: name={{ item }} state=latest update_cache=yes
-      loop: [ 'apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common', 'python3-pip', 'virtualenv', 'python3-setuptools']
-  - name: Add Docker GPG apt Key
-    apt_key:
-      url: https://download.docker.com/linux/ubuntu/gpg
-      state: present
-  - name: Add Docker Repository
-    apt_repository:
-      repo: deb https://download.docker.com/linux/ubuntu bionic stable
-      state: present
-  - name: Update apt and install docker-ce
-      apt: update_cache=yes name=docker-ce state=latest
+----
+- name: install ad
+  - hosts: localhost
+    become: yes
+    tasks:
+    - name: Install required system packages
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - python3-pip
+            - virtualenv
+          - python3-setuptools
+        state: latest
+        update_cache: yes
+    - name: Add Docker GPG apt Key
+      apt_key:
+        url: https://download.docker.com/linux/debian/gpg
+        state: present
+    - name: Add Docker Repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/debian buster stable
+        state: present
+    - name: Update apt and install docker-ce
+      apt:
+        update_cache: yes
+        name: docker-ce
+        state: latest
 
-  - name: Install Docker Module for Python
-    pip:
-      name: docker
-  - name: Create logfile directory
-    file:
-      path: /var/log/http_server_log/
-      state: directory
-  - name: Install python-docker
-    apt:
-      name: python-docker
-      state: present
-  - name: Build server image
-    docker_image:
-      name: http_server
-      build:
-        path: ./server
-      source: build
-      state: present
-      force_source: yes
-  - name: Build sender image
-    docker_image:
-      name: get_sender
-      build:
-        path: ./sender
-      source: build
-      state: present
-      force_source: yes
-  - name: Create server container
-    docker_container:
-      name: http_server
-      image: http_server
-      state: started
-      recreate: yes
-      published_ports:
-        - "8080:8080"
-      volumes:
-        - /var/log/http_server_log/:/app/log
-  - name: Create sender container
-    docker_container:
-      name: get_sender
-      image: get_sender
-      state: started
-      recreate: yes
-      network_mode: host
+    - name: Install Docker Module for Python
+      pip:
+        name: docker
+
+    - name: Create logfile directory
+      file:
+        path: /var/log/http_server_log/
+        state: directory
+    - name: Install python-docker
+      apt:
+        name: python-docker
+        state: present
+    - name: Build server image
+      docker_image:
+        name: http_server
+        build:
+          path: ./server
+        source: build
+        state: present
+        force_source: yes
+    - name: Build sender image
+      docker_image:
+        name: get_sender
+        build:
+          path: ./sender
+        source: build
+        state: present
+        force_source: yes
+    - name: Create server container
+      docker_container:
+        name: http_server
+        image: http_server
+        state: started
+        recreate: yes
+        published_ports:
+          - "8080:8080"
+        volumes:
+          - /var/log/http_server_log/:/app/log
+    - name: Create sender container
+      docker_container:
+        name: get_sender
+        image: get_sender
+        state: started
+        recreate: yes
+        network_mode: host
