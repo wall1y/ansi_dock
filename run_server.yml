@@ -1,8 +1,8 @@
-----
+---
 - name: install ad
-  - hosts: localhost
-    become: yes
-    tasks:
+  hosts: localhost
+  become: yes
+  tasks:
     - name: Install required system packages
       apt:
         name:
